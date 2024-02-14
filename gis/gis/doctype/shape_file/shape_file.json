@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:shape_file_title",
+ "creation": "2024-01-31 13:02:29.540238",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "shape_file_title",
+  "description",
+  "zip_file",
+  "column_break_m7o7",
+  "geom",
+  "mappings_sb",
+  "field_mappings",
+  "entries_section",
+  "items"
+ ],
+ "fields": [
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Dscription"
+  },
+  {
+   "description": "Zip file containing .shp, .dbf, .shx and other related files",
+   "fieldname": "zip_file",
+   "fieldtype": "Attach",
+   "label": "Zip File",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_m7o7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "mappings_sb",
+   "fieldtype": "Section Break",
+   "label": "Field Mappings"
+  },
+  {
+   "fieldname": "field_mappings",
+   "fieldtype": "Table",
+   "label": "Mappings",
+   "options": "Shape File Field Mapping",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "entries_section",
+   "fieldtype": "Section Break",
+   "label": "Entries"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Shape File Records",
+   "options": "Shape File Item",
+   "read_only": 1
+  },
+  {
+   "fieldname": "shape_file_title",
+   "fieldtype": "Data",
+   "label": "Shape File Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "geom",
+   "fieldtype": "Geolocation",
+   "label": "Geom"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-14 17:16:30.569039",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Shape File",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

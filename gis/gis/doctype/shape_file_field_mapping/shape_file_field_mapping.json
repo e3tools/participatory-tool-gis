@@ -1,0 +1,62 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-31 13:27:30.212729",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "attribute",
+  "attribute_data_type",
+  "column_break_pfx7",
+  "table_field",
+  "table_field_data_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "attribute",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Shape File Attribute",
+   "reqd": 1
+  },
+  {
+   "fieldname": "table_field",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Destination Field",
+   "reqd": 1
+  },
+  {
+   "fieldname": "attribute_data_type",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Attribute Data Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "table_field_data_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Destination Data Type",
+   "options": "\nText\nInteger\nFloat\nDate",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_pfx7",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-31 20:07:55.372922",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Shape File Field Mapping",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:admin_name",
+ "creation": "2024-01-31 11:37:36.805116",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "admin_code",
+  "admin_name",
+  "continent",
+  "iso3",
+  "iso2",
+  "column_break_bdol",
+  "geom"
+ ],
+ "fields": [
+  {
+   "fieldname": "continent",
+   "fieldtype": "Select",
+   "label": "Continent",
+   "options": "Africa",
+   "reqd": 1
+  },
+  {
+   "fieldname": "iso3",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "ISO3"
+  },
+  {
+   "fieldname": "iso2",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "ISO2"
+  },
+  {
+   "fieldname": "column_break_bdol",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "geom",
+   "fieldtype": "Geolocation",
+   "label": "Geom",
+   "reqd": 1
+  },
+  {
+   "fieldname": "admin_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Admin Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "admin_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Admin Name",
+   "reqd": 1,
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-31 12:32:37.615354",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Admin 0",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

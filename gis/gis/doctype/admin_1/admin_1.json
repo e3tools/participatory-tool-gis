@@ -1,0 +1,73 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:admin_name",
+ "creation": "2024-01-31 11:55:23.204511",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "admin_name",
+  "admin_0",
+  "type",
+  "column_break_swjm",
+  "geom"
+ ],
+ "fields": [
+  {
+   "fieldname": "admin_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Admin Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "admin_0",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Admin 0",
+   "options": "Admin 0",
+   "reqd": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Data",
+   "label": "Type"
+  },
+  {
+   "fieldname": "column_break_swjm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "geom",
+   "fieldtype": "Geolocation",
+   "label": "Geom",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-31 12:31:27.517338",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Admin 1",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
