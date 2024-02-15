@@ -1,5 +1,7 @@
 import frappe
 import re
+import json
+from gis.analyzers.utils import extract_fields_from_formula
 
 class ShapeFileAnalyzer:
     """
@@ -28,10 +30,14 @@ class ShapeFileAnalyzer:
         """
         def transform_row_keys(row):
             rc = frappe._dict()
+            rc.geom = row.geom
             for attrb in self.shape_file.field_mappings:
                 rc[attrb.attribute] = row.get(attrb.table_field)
             return rc
 
+        parent_geojson = { "type": "FeatureCollection",
+                "features": []
+             }
         shape_file_items = self.shape_file.items
         rec = {
             self.analysis_name: None
@@ -43,7 +49,12 @@ class ShapeFileAnalyzer:
             row = transform_row_keys(row)
             row.update(rec)
             rows.append(row)
-        return rows
+
+            parent_geojson["features"].append({'type': 'Feature', 
+                                                'properties': json.loads(json.dumps(row)), 
+                                                'geometry': json.loads(row.geom)
+                                             })
+        return rows, json.dumps(parent_geojson) 
 
     def _analyze_column_wise(self):
         """
@@ -55,17 +66,24 @@ class ShapeFileAnalyzer:
         """
         Apply formula against a row
         """
-        matches = []
-        # fields = self.formula_regex.findall(formula)
-        # retrieve the matched texts enclosed with {}
-        for match in self.formula_regex.finditer(formula):
-            matches.append(match.group()) 
-
-        for match in matches:
-            attrib = match.lstrip(self.START_DELIMITER).rstrip(self.END_DELIMITER).strip()
+        fields = extract_fields_from_formula(self.formula)
+        for field in fields:
+            attrib = field.lstrip(self.START_DELIMITER).rstrip(self.END_DELIMITER).strip()
             table_col = self._resolve_table_field(attrib)
             if table_col:
-                formula = formula.replace(match, str(row.get(table_col))) #replace with row value
+                formula = formula.replace(field, str(row.get(table_col))) #replace with row value
+
+        # matches = []
+        # # fields = self.formula_regex.findall(formula)
+        # # retrieve the matched texts enclosed with {}
+        # for match in self.formula_regex.finditer(formula):
+        #     matches.append(match.group()) 
+
+        # for match in matches:
+        #     attrib = match.lstrip(self.START_DELIMITER).rstrip(self.END_DELIMITER).strip()
+        #     table_col = self._resolve_table_field(attrib)
+        #     if table_col:
+        #         formula = formula.replace(match, str(row.get(table_col))) #replace with row value
 
         return frappe.safe_eval(formula)
 
