@@ -1,0 +1,52 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-02-19 11:15:41.013775",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "color",
+  "column_break_gkxr",
+  "expression"
+ ],
+ "fields": [
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label"
+  },
+  {
+   "description": "Use a number or a valid numpy logical expression where x is the pixel value (<b>for Raster File) </b> or x is the result of the computation <b> (for Shape Files)</b>. For instance: \"(-3.0 &lt; x) &amp; (x &lt;= 1)\" or \"x &lt;= 1\".'",
+   "fieldname": "expression",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Expression",
+   "reqd": 1
+  },
+  {
+   "fieldname": "color",
+   "fieldtype": "Color",
+   "in_list_view": 1,
+   "label": "Color"
+  },
+  {
+   "fieldname": "column_break_gkxr",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-02-19 11:24:42.688758",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Legend Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

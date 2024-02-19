@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "autoname": "field:raster_name",
+ "creation": "2024-02-19 10:49:46.294676",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "raster_name",
+  "raster_file",
+  "datatype",
+  "legend",
+  "column_break_zjlp",
+  "nodata",
+  "srid",
+  "max_zoom"
+ ],
+ "fields": [
+  {
+   "fieldname": "raster_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Raster Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "raster_file",
+   "fieldtype": "Attach",
+   "label": "Raster File"
+  },
+  {
+   "fieldname": "datatype",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Datatype",
+   "options": "Continuous\nCategorical",
+   "reqd": 1
+  },
+  {
+   "description": "Leave blank to keep the internal band nodata values. If a nodata value is specified here, it will be used for all bands of this raster.",
+   "fieldname": "nodata",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Nodata Value"
+  },
+  {
+   "description": "Leave blank to use the internal raster srid. If a srid is specified here, it will be used for all calculations.",
+   "fieldname": "srid",
+   "fieldtype": "Int",
+   "label": "SRID"
+  },
+  {
+   "fieldname": "max_zoom",
+   "fieldtype": "Int",
+   "label": "Max Zoom",
+   "non_negative": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_zjlp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "legend",
+   "fieldtype": "Link",
+   "label": "Legend",
+   "options": "Legend",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-19 12:07:12.591990",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Raster",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "raster_name"
+}
