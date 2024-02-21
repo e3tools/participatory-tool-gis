@@ -27,13 +27,18 @@ def unzip_file(zip_src: str, dest_dir=None):
 				files = [os.path.join(dest_dir, x) for x in os.listdir(dest_dir)] 
 	return files
 
-def file_exists(file_path: str):
+def file_exists(file_path: str, raise_exception=False):
 	"""Does file exist
 
 	Args:
 		file_path (_type_): _description_
 	"""
-	return f_exists(file_path)
+	exists = f_exists(file_path)
+	# file = Path(file_path)
+	# res = file.is_file()
+	if raise_exception and not exists:
+		raise FileNotFoundError("%s does not exist" % file_path) 
+	return exists
 
 def get_temp_file(suffix=".tif", prefix=None, delete=False):
 	"""Generate a temp file"""
@@ -55,7 +60,7 @@ def get_absolute_path(file_path: str):
 	return None
  
 def get_absolute_media_path(file_path=None, is_random_file=False, random_file_prefix=None, 
-							random_file_ext=None, sub_dir=None, use_static_dir=False):
+							random_file_ext=None, sub_dir=None, is_private=False):
 	"""Get absolute file location given a relative file path
 	   Also generates random file names and returns the absolute path
 	Args:
@@ -76,12 +81,12 @@ def get_absolute_media_path(file_path=None, is_random_file=False, random_file_pr
 	
 	if is_random_file:
 		file_path = generate_file_name(prefix=random_file_prefix, extension=random_file_ext)
-		path = get_media_dir(sub_dir, use_static_dir=use_static_dir) + file_path
+		path = get_media_dir(sub_dir, is_private=False) + file_path
 	else: # validate that it is a valid path
 		if file_exists(file_path, raise_exception=False):
 			path = file_path
 		else:
-			path = get_media_dir(sub_dir, use_static_dir=use_static_dir) + file_path
+			path = get_media_dir(sub_dir, is_private=False) + file_path
 	return path.replace("//", "/")
 
 

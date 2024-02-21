@@ -14,6 +14,6 @@ class Raster(Document):
 		if self.raster_file:
 			meta = get_raster_meta(self.raster_file, set_default_nodata=False)
 			if meta:
-				self.nodata = meta.get('nodata') if 'nodata' in meta else 0
+				self.nodata = meta.get('nodata') if 'nodata' in meta and meta['nodata'] else DEFAULTS.NODATA
 				self.max_zoom = meta.get('max_zoom') if 'max_zoom' in meta else 0
-				self.srid = meta['crs'].data['init'] if 'crs' in meta else DEFAULTS.SRID
+				self.srid = meta['crs'] if 'crs' in meta and meta['crs'] else DEFAULTS.SRID

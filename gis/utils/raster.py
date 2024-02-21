@@ -9,22 +9,26 @@ import numpy as np
 from frappe.utils import cint
 from frappe.utils.file_manager import save_file_on_filesystem
 import datetime
+from gis.enums import RasterOperationEnum
 
 # see https://geoscripting-wur.github.io/PythonRaster/
 
-def parse_raster(file_path):
+def parse_raster(file_path: str, vector=None, apply_func=None):
 	"""Read the contents of a raster file
 
 	Args:
-		file_path (_type_): File Path
+		file_path (string): File Path
+		vector (string): Vector to clip
+		apply_func (function): Function to be applied to each pixel value
 	"""
-	pass
+	return clip_raster_to_vector(raster_file=file_path, vector=vector, apply_func=apply_func)
 
 def get_meta_data(file_path):
 	"""Get metadata
 	Args:
 		file_path (string): File path
 	"""
+	pass
 
 def get_raster_meta(rasterfile, set_default_nodata=True, default_nodata=GISSettings.DEFAULT_NODATA):
 	"""
@@ -46,13 +50,14 @@ def get_raster_meta(rasterfile, set_default_nodata=True, default_nodata=GISSetti
 
 	return meta
 
-def clip_raster_to_vector(raster_file, vector, use_temp_dir=True, dest_nodata=None):
+def clip_raster_to_vector(raster_file, vector=None, use_temp_dir=True, dest_nodata=None, apply_func=None):
 	"""
 	Mask out regions of a raster that are outside the polygons defined in the shapefile.
 
 	Args:
 		vector (geojson): Polygon to be used for clipping
 		dest_nodata (number): Value to set as nodata when returning the clipped raster
+		apply_func (function): Function to be applied to each pixel value
 	
 	Returns (string, array): Tuple of Url of the clipped raster and the raster array
 	"""
@@ -62,28 +67,50 @@ def clip_raster_to_vector(raster_file, vector, use_temp_dir=True, dest_nodata=No
 		
 	all_touched = GISSettings.get_settings().raster_clipping_algorithm == "All Touched"
 	# read the file and crop areas outside the polygon
-	with rasterio.open(file) as src:
-		nodata = dest_nodata if dest_nodata != None else src.meta['nodata'] or DEFAULTS.NODATA
-		out_image, out_transform = rasterio.mask.mask(src, 
-					[json.loads(vector)], # accepts array of shapes
-					all_touched=all_touched,
-					nodata=nodata,
-					crop=True)
-		out_meta = src.meta
+	if vector:
+		with rasterio.open(file) as src:
+			nodata = dest_nodata if dest_nodata != None else src.meta['nodata'] or DEFAULTS.NODATA
+			out_image, out_transform = rasterio.mask.mask(src, 
+						[json.loads(vector)], # accepts array of shapes
+						all_touched=all_touched,
+						nodata=nodata,
+						crop=True)
+			out_meta = src.meta
+
+					# update meta
+			out_meta.update({
+				"driver": "GTiff",
+				"height": out_image.shape[1],
+				"width": out_image.shape[2],
+				"transform": out_transform
+			})
+	else:
+		# if no vector specified, nothing to crop, so return full raster
+		with rasterio.open(file) as src:
+			nodata = dest_nodata if dest_nodata != None else src.meta['nodata'] or DEFAULTS.NODATA
+			out_image = src.read(1) # src.copy()
+			out_image[out_image==nodata] = np.ma.masked
+			out_image[np.isnan(out_image)] = np.ma.masked
+			out_meta = src.meta
 	
-	# update meta
-	out_meta.update({
-		"driver": "GTiff",
-		"height": out_image.shape[1],
-		"width": out_image.shape[2],
-		"transform": out_transform
-	})
+			# update meta
+			out_meta.update({
+				"driver": "GTiff",
+				"height": out_image.shape[0],
+				"width": out_image.shape[1],
+				# "transform": out_transform
+			})
 
 	# enable compress
 	out_meta.update({'compress': 'lzw'})
 
 	# update nodata
 	out_meta.update({'nodata': nodata})
+
+	if apply_func:
+		# see https://blog.enterprisedna.co/how-to-map-a-function-over-numpy-array/
+		res = np.array(list(map(apply_func, out_image)))
+		out_image = res
 
 	# get output file
 	if use_temp_dir:
@@ -147,14 +174,14 @@ def return_raster_with_stats(request, datasource, prefix, change_enum,
 									random_file_prefix=prefix,
 									random_file_ext=".tif",
 									sub_dir=subdir,
-									use_static_dir=False)
+									is_private=False)
 
 	raster_file = save_raster(dataset=datasource, 
 							  source_path=metadata_raster_path,
 							  target_path=out_file)
 	
 	raster_url = "%s" % (get_download_url(request, raster_file, 
-										  use_static_dir=False))
+										  is_private=False))
 	results = results or []		
 	
 	# Get counts of change types		
@@ -216,7 +243,7 @@ def save_raster(dataset, source_path, target_path, dtype=rasterio.int16, no_data
 		source_path (string): Path of raster where we will get the Metadata
 		target_path (string): Path to save the raster
 	"""
-	rasterin = get_absolute_media_path(source_path.replace("//", "/"), use_static_dir=False)
+	rasterin = get_absolute_media_path(source_path.replace("//", "/"), is_private=False)
 	rasterout = target_path.replace("//", "/")
  
 	# open source to extract meta
@@ -285,6 +312,41 @@ def compute_area(pixel_count, resolution):
 	"""
 	# The area is arrived at getting the area per pixel multiplied by number of pixels
 	return (resolution or 1) * (resolution or 1) * pixel_count # multiply resolution squared by pixel count
+
+def do_raster_operation(rasters, operation: RasterOperationEnum, nodata):
+	"""
+	Perform operations on rasters
+
+	Args:
+		rasters (list): List of rasters
+		operation (RasterOperationEnum): Type of operation
+	"""
+	res = None
+	if isinstance(rasters, list):
+		if operation == RasterOperationEnum.DIVIDE and len(rasters) != 2:
+			frappe.throw(_("The list must contain only 2 arrays"))
+		
+		masked_arrays = []
+		# mask nodata values
+		for i, itm in enumerate(rasters):
+			# loop because np.ma.<arithmetic> replaces the masked values
+			itm = np.ma.array(itm, fill_value=nodata)
+			itm[itm==nodata] = np.ma.masked # mask no data
+			itm[np.isnan(itm)] = np.ma.masked # mask non-numerics
+			masked_arrays.append(itm)
+
+			if i == 0:
+				res = itm
+			else:
+				if operation == RasterOperationEnum.ADD:
+					res = np.ma.add(res, itm)
+				elif operation == RasterOperationEnum.SUBTRACT:
+					res = np.ma.subtract(res, itm)
+				elif operation == RasterOperationEnum.MULTIPLY:
+					res = np.ma.multiply(res, itm)
+				elif operation == RasterOperationEnum.DIVIDE:
+					res = np.ma.divide(res, itm)
+	return res
 
 def generate_tiles(raster_file, nodata, change_enum):
 	"""Generate Tiles

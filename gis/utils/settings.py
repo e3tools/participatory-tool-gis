@@ -8,7 +8,8 @@ class GISSettings:
     def __init__(self):
         pass
     
-    def _get_settings(self):
+    @staticmethod
+    def _get_settings():
         return frappe.db.get_singles_dict("GIS Settings")
 
     @staticmethod

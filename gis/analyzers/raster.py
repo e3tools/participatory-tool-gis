@@ -2,6 +2,8 @@ import frappe
 import re
 import json
 from gis.utils.common import extract_fields_from_formula
+from gis.utils.raster import parse_raster, save_raster
+from gis.utils.file import get_absolute_media_path
 import fiona
 import shapely
 from shapely.geometry import shape
@@ -23,21 +25,34 @@ class RasterFileAnalyzer:
             self.analysis_name = analysis_name
          
         self.data_source = frappe.get_doc("Technical Data Source", data_source)
-        self.shape_file = frappe.get_doc("Shape File", self.data_source.shape_file)
-        self.formula = analysis_doc.formula
+        self.raster_file = frappe.get_doc("Raster", self.data_source.raster)
+        self.formula = analysis_doc.formula or 'x' #Formula for raster calculation are specified as x
         self.formula_regex = re.compile(r'{(.*?)}')
-        self.START_DELIMITER = "{"
-        self.END_DELIMITER = "}"
+        # self.START_DELIMITER = "{"
+        # self.END_DELIMITER = "}"
+
+    def _make_function(self):
+        """
+        Construct a dynamic function based on the formula provided
+        """
+        # def func(x):
+        #     return frappe.safe_eval(self.formula)
+        # return func
+        string_input = f"""
+            def func(x):
+                return {self.formula}
+            """
+        return eval(string_input)  
 
     def analyze(self):
         """
         Analyze a shapefile
         """
-        return self._analyze_row_wise()
+        return self._analyze_pixel_values()
 
-    def _analyze_row_wise(self):
+    def _analyze_pixel_values(self):
         """
-        Perform analysis for each row
+        Perform analysis for each pixel
         """
         def transform_row_keys(row):
             rc = frappe._dict()
@@ -45,66 +60,7 @@ class RasterFileAnalyzer:
             for attrb in self.shape_file.field_mappings:
                 rc[attrb.attribute] = row.get(attrb.table_field)
             return rc
-
-        parent_geojson = { "type": "FeatureCollection",
-                "features": []
-             }
-        shape_file_items = self.shape_file.items
-        rec = {
-            self.analysis_name: None
-        }
-        rows = []
-        for row in shape_file_items:
-            # row = transform_row_keys(row)
-            rec[self.analysis_name] = self._apply_formula(self.formula, row)
-            row = transform_row_keys(row)
-            row.update(rec)
-            rows.append(row)
-
-            parent_geojson["features"].append({'type': 'Feature', 
-                                                'properties': json.loads(json.dumps(row)), 
-                                                'geometry': json.loads(row.geom),
-                                                'style_field': self.analysis_name
-                                             })
-        return rows, json.dumps(parent_geojson)
-
-    def _analyze_column_wise(self):
-        """
-        Perform analysis for each column. This is especially the case for aggregate functions like COUNT, SUM, MEAN, STDDEV
-        """
-        pass
-
-    def _apply_formula(self, formula, row):
-        """
-        Apply formula against a row
-        """
-        fields = extract_fields_from_formula(self.formula)
-        for field in fields:
-            attrib = field.lstrip(self.START_DELIMITER).rstrip(self.END_DELIMITER).strip()
-            table_col = self._resolve_table_field(attrib)
-            if table_col:
-                formula = formula.replace(field, str(row.get(table_col))) #replace with row value
-
-        # matches = []
-        # # fields = self.formula_regex.findall(formula)
-        # # retrieve the matched texts enclosed with {}
-        # for match in self.formula_regex.finditer(formula):
-        #     matches.append(match.group()) 
-
-        # for match in matches:
-        #     attrib = match.lstrip(self.START_DELIMITER).rstrip(self.END_DELIMITER).strip()
-        #     table_col = self._resolve_table_field(attrib)
-        #     if table_col:
-        #         formula = formula.replace(match, str(row.get(table_col))) #replace with row value
-
-        return frappe.safe_eval(formula)
-
-    def _resolve_table_field(self, attribute):
-        """
-        Infer the table field given the attribute
-
-        Data is stored in generic columns in the database but the user only knows of the attributes
-        """
-        mapping = [x for x in self.shape_file.field_mappings if x.attribute == attribute]
-        return mapping[0].table_field if mapping else None
-   
+        
+        raster_file = get_absolute_media_path(self.raster_file.raster_file) 
+        out_raster, file_url, nodata = parse_raster(raster_file, vector=None, apply_func=self._make_function())
+        return (out_raster, file_url, nodata)
