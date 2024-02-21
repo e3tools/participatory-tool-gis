@@ -1,0 +1,5 @@
+NODATA = 255
+MIN_INT = -9223372036854775807
+MAX_INT = 9223372036854775807
+SRID = "EPSG:4326"
+DELETE_TEMP_FILES_AFTER=86400 #Time in seconds after which temp .tif files will be deleted

@@ -1,8 +1,8 @@
-import frappe
-import json
+import json 
 import fiona
 import shapely
 from shapely.geometry import shape
+from frappe import _
 
 def parse_shapefile(file_path):
     """

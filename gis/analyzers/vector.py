@@ -1,19 +1,30 @@
 import frappe
 import re
 import json
-from gis.analyzers.utils import extract_fields_from_formula
+from gis.utils.common import extract_fields_from_formula
+import fiona
+import shapely
+from shapely.geometry import shape
+from frappe import _
 
 class ShapeFileAnalyzer:
     """
     Shape File Analyzer wrapper
     """
-    def __init__(self, analysis_name):
-        self.analysis_name = analysis_name
-        data_source = frappe.get_doc("Technical Analysis", analysis_name).data_source
+    def __init__(self, analysis_name=None, analysis_doc=None):
+        if not analysis_name and not analysis_doc:
+            frappe.throw(_("Specify either the analysis name or the analysis document"))
+        if analysis_doc:
+            self.analysis_name = analysis_doc.analysis_name
+            data_source = analysis_doc.data_source
+        elif analysis_name:
+            analysis_doc = frappe.get_doc("Technical Analysis", analysis_name)
+            data_source = analysis_doc.data_source
+            self.analysis_name = analysis_name
+         
         self.data_source = frappe.get_doc("Technical Data Source", data_source)
-
         self.shape_file = frappe.get_doc("Shape File", self.data_source.shape_file)
-        self.formula = self.data_source.formula
+        self.formula = analysis_doc.formula
         self.formula_regex = re.compile(r'{(.*?)}')
         self.START_DELIMITER = "{"
         self.END_DELIMITER = "}"
@@ -52,9 +63,10 @@ class ShapeFileAnalyzer:
 
             parent_geojson["features"].append({'type': 'Feature', 
                                                 'properties': json.loads(json.dumps(row)), 
-                                                'geometry': json.loads(row.geom)
+                                                'geometry': json.loads(row.geom),
+                                                'style_field': self.analysis_name
                                              })
-        return rows, json.dumps(parent_geojson) 
+        return rows, json.dumps(parent_geojson)
 
     def _analyze_column_wise(self):
         """
@@ -95,3 +107,4 @@ class ShapeFileAnalyzer:
         """
         mapping = [x for x in self.shape_file.field_mappings if x.attribute == attribute]
         return mapping[0].table_field if mapping else None
+   
