@@ -143,9 +143,10 @@ class GeoServerHelper:
 		Check if the SLD style is defined from Django admin PublishedComputation
 		""" 
 		obj = self.get_legend_style()
-		if obj and obj.style:
-			return obj.style
-		return None
+		# if obj and obj.sld_style:
+		# 	return obj.sld_style
+		#return None
+		return obj
 
 	def _generate_style(self, raster_path):
 		"""

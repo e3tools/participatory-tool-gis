@@ -18,6 +18,7 @@ from gis.types import StrippedRaster
 import pandas as pd
 from gis.utils.common import make_function
 import re
+import swifter
 
 
 # see https://geoscripting-wur.github.io/PythonRaster/
@@ -123,7 +124,7 @@ class RasterCalcHelper():
 		for raster in self.rasters:
 			results = []
 			raster_path = get_absolute_media_path(raster.raster_file)   
-			clipped_raster, ndata, rastfile = clip_raster_to_vector(raster_path, vectors)
+			clipped_raster, ndata, rastfile, out_meta = clip_raster_to_vector(raster_path, vectors)
 
 			# self.raster_band_stats = rasterstats.zonal_stats(vectors=vectors,
 			# 				raster=raster_path,
@@ -324,6 +325,7 @@ def clip_raster_to_vector(raster_file, vector=None, use_temp_dir=True, dest_noda
 		return (None, None)
 		
 	all_touched = GISSettings.get_settings().raster_clipping_algorithm == "All Touched"
+	out_meta = {}
 	# read the file and crop areas outside the polygon 
 	with rasterio.open(file) as src:
 		out_meta = src.meta
@@ -342,15 +344,20 @@ def clip_raster_to_vector(raster_file, vector=None, use_temp_dir=True, dest_noda
 		else:
 			out_image = src.read() 
 
-		out_image[out_image==nodata] = np.ma.masked
-		out_image[np.isnan(out_image)] = np.ma.masked
+	# convert to maskedArray
+	out_image = np.ma.MaskedArray(out_image)
 
-		# update meta
-		out_meta.update({
-			"driver": get_drivers(), #"GTiff",
-			"height": out_image.shape[1],
-			"width": out_image.shape[2], 
-		}) 
+	if 'int' in out_meta['dtype']:
+		nodata = cint(nodata)
+	out_image[out_image==nodata] = np.ma.masked
+	out_image[np.isnan(out_image)] = np.ma.masked
+
+	# update meta
+	out_meta.update({
+		"driver": get_drivers(), #"GTiff",
+		"height": out_image.shape[1],
+		"width": out_image.shape[2], 
+	}) 
 
 	# enable compress
 	out_meta.update({'compress': 'lzw'})
@@ -382,7 +389,9 @@ def clip_raster_to_vector(raster_file, vector=None, use_temp_dir=True, dest_noda
 	frappe.db.connect() #connect incase just to avoid risk of Lost connection error
 	# #delete_file("files/" + report_name + ".zip") # delete old zip if it exists
 	
-	return (out_image, out_file, out_meta['nodata'])
+	# convert back to normal array from maskedArray
+	out_image = np.array(out_image)
+	return (out_image, out_file, out_meta['nodata'], out_meta)
 	# extension = DEFAULTS.COMPUTED_RASTER_FILE_TYPE or '.png'
 
 	# analysis_sub_folder = DEFAULTS.COMPUTED_RASTER_DIR or 'analysis/rasters'
@@ -400,7 +409,7 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 							   metadata_raster_path, nodata, resolution,
 							   start_year, end_year, subdir=None, results=None,
 							   extras={}, is_intermediate_variable=False, 
-							   precomputed_field_map={}):
+							   precomputed_field_map={}, metadata={}):
 	"""Generates a raster and computes the statistics
 
 	Args:
@@ -445,7 +454,8 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 
 	raster_file = save_raster(dataset=datasource, 
 							  source_path=metadata_raster_path,
-							  target_path=tmp_file)
+							  target_path=tmp_file,
+							  metadata=metadata)
 	
 	# save to frappe site files folder
 	fl = save_to_frappe_sites_folder(src_path=raster_file, dest_path=os.path.split(out_file)[-1]) 
@@ -465,15 +475,27 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 						'val': datasource.flatten(), # datasource.filled(fill_value=nodata).flatten(),												
 					})
 	df['label'] = 'Uncategorized'
-	
+	nodata_mask = (df['val'] == nodata)
 	if not results:
 		#for mapping in change_enum:
 		for mapping in legend.legend_entries:
 			#df.loc[df.apply(lambda x: (x.val % 2 == 0), axis=1 ) ,  'mapping'] = 11
 
+			
+			# func = _make_function(expression)
+			# if expression.strip().lower() == 'x':
+			# 	# if formula is x, no need to apply a transform
+			# 	func = None			
+			# 	mask = (df['val'] != nodata) & (df['val'] != mapping.) & (df['lulc'] != nodata)
+			# 	df.loc[~nodata_mask & mask, ['label']] = mapping.label
+			# else:
+			
 			# replace x with x.val since x.val is the property of the Dataframe
-			expression = mapping.expression.replace('x', 'x.val')
-			df.loc[df.apply(_make_function(expression), axis=1), ['label']] = mapping.label
+			# expression = mapping.expression.replace('x', 'x.val')
+			expression = mapping.expression
+			# df.loc[df.apply(_make_function(expression), axis=1), ['label']] = mapping.label
+			func = _make_function(expression)
+			df['label'] = df['val'].swifter.apply(func)
 
 			count = df[df.label == mapping.label].shape[0]
 
@@ -539,7 +561,7 @@ def save_to_frappe_sites_folder(src_path, dest_path):
 	fl = save_file_on_filesystem(file_path, content=data_file)
 	return fl
 
-def save_raster(dataset, source_path, target_path, dtype=rasterio.uint16, no_data=None):	
+def save_raster(dataset, source_path, target_path, dtype=rasterio.uint16, no_data=None, metadata={}):	
 	"""
 	Write raster dataset to disk
 
@@ -551,7 +573,7 @@ def save_raster(dataset, source_path, target_path, dtype=rasterio.uint16, no_dat
 	rasterout = target_path.replace("//", "/")
  
 	# open source to extract meta
-	meta = get_raster_meta(rasterin) 
+	meta = get_raster_meta(rasterin) if not metadata else metadata
 	meta.update({
 				 'dtype': dtype, # rasterio.uint8,
 				 'compress': 'lzw',

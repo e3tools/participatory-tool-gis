@@ -6,4 +6,10 @@ from frappe.model.document import Document
 
 
 class Admin1(Document):
-	pass
+	def validate(self):
+		# print(self.geom)
+		pass
+
+		"""
+		
+		"""

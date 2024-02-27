@@ -50,8 +50,12 @@ class RasterAnalyzer:
 		"""
 		Perform analysis for each pixel
 		"""		
-		raster_file = get_absolute_media_path(self.raster_file.raster_file) 
-		out_raster, file_url, nodata = parse_raster(raster_file, vector=self.vector, apply_func=self._make_function())
+		raster_file = get_absolute_media_path(self.raster_file.raster_file)
+		func = self._make_function()
+		if self.formula.strip().lower() == 'x':
+			# if formula is x, no need to apply a transform
+			func = None
+		out_raster, file_url, nodata, out_meta = parse_raster(raster_file, vector=self.vector, apply_func=func)
 		# return (out_raster, file_url, nodata)
 		
 		# out_raster = df['mapping'].values.reshape(ilswe.shape)
@@ -67,6 +71,7 @@ class RasterAnalyzer:
 			resolution=resolution,
 			start_year=None,
 			end_year=None,
-			subdir=DEFAULTS.COMPUTED_RASTER_DIR # ILSWESettings.SUB_DIR
+			subdir=DEFAULTS.COMPUTED_RASTER_DIR, # ILSWESettings.SUB_DIR
+			metadata=out_meta
 		)
 		

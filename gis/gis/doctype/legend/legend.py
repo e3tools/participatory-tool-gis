@@ -7,5 +7,5 @@ from frappe import _
 
 class Legend(Document):
 	def validate(self):
-		if not self.sld_layer and not self.legend_entries:
+		if not self.sld_style and not self.legend_entries:
 			frappe.throw(_("You must specify either the legend entries or the SLD Layer"))
