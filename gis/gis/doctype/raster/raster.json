@@ -14,7 +14,8 @@
   "column_break_zjlp",
   "nodata",
   "srid",
-  "max_zoom"
+  "max_zoom",
+  "resolution"
  ],
  "fields": [
   {
@@ -68,11 +69,16 @@
    "label": "Legend",
    "options": "Legend",
    "reqd": 1
+  },
+  {
+   "fieldname": "resolution",
+   "fieldtype": "Float",
+   "label": "Resolution"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-20 04:01:01.540616",
+ "modified": "2024-02-24 04:41:18.571873",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Raster",

@@ -6,6 +6,8 @@ from frappe.utils import get_files_path
 import os
 import time
 import datetime
+from frappe.utils.file_manager import save_file
+import gis.defaults as DEFAULTS
 
 def unzip_file(zip_src: str, dest_dir=None):
 	"""Unzip files
@@ -40,7 +42,7 @@ def file_exists(file_path: str, raise_exception=False):
 		raise FileNotFoundError("%s does not exist" % file_path) 
 	return exists
 
-def get_temp_file(suffix=".tif", prefix=None, delete=False):
+def get_temp_file(suffix=DEFAULTS.COMPUTED_RASTER_FILE_TYPE, prefix=None, delete=False):
 	"""Generate a temp file"""
 	return tempfile.NamedTemporaryFile(delete=delete, suffix=suffix, prefix=prefix).name
 
@@ -81,12 +83,15 @@ def get_absolute_media_path(file_path=None, is_random_file=False, random_file_pr
 	
 	if is_random_file:
 		file_path = generate_file_name(prefix=random_file_prefix, extension=random_file_ext)
-		path = get_media_dir(sub_dir, is_private=False) + file_path
+		path = get_media_dir(sub_dir, is_private=is_private) + file_path
 	else: # validate that it is a valid path
 		if file_exists(file_path, raise_exception=False):
 			path = file_path
 		else:
-			path = get_media_dir(sub_dir, is_private=False) + file_path
+			# if /files/ is included, strip it out
+			if file_path.startswith("/files/"):
+				file_path = file_path.split("/files/")[-1]
+			path = get_media_dir(sub_dir, is_private=is_private) + file_path
 	return path.replace("//", "/")
 
 
@@ -99,9 +104,9 @@ def get_media_dir(subdir=None, is_private=False):
 	"""
 	root = None
 	if not is_private:
-		root = f'{frappe.utils.get_bench_path()}/sites/{frappe.utils.get_site_base_path()[2:]}/public'
+		root = f'{frappe.utils.get_bench_path()}/sites/{frappe.utils.get_site_base_path()[2:]}/public/files'
 	else: 
-		root = f'{frappe.utils.get_bench_path()}/sites/{frappe.utils.get_site_base_path()[2:]}'	 
+		root = f'{frappe.utils.get_bench_path()}/sites/{frappe.utils.get_site_base_path()[2:]}/files'	 
  
 	path = root.rstrip("/") + "/"
 	if subdir:
@@ -146,3 +151,12 @@ def delete_files(directory, extension=None, age_in_seconds=0):
 				os.remove(file_full_path)
 		else:
 			os.remove(file_full_path)
+
+
+def create_folder(file_path):
+	"""Create a folder
+
+	Args:
+		file_path (str): Full file path or directory
+	"""
+	frappe.create_folder(file_path)

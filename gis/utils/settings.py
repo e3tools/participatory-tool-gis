@@ -10,22 +10,7 @@ class GISSettings:
     
     @staticmethod
     def _get_settings():
-        return frappe.db.get_singles_dict("GIS Settings")
-
-    @staticmethod
-    @property
-    def DEFAULT_NODATA():
-        settings = GISSettings._get_settings().default_nodata or DEFAULTS.NODATA
-
-    @staticmethod
-    @property
-    def MIN_INT():
-        return -9223372036854775807
-
-    @staticmethod
-    @property
-    def MAX_INT():
-        return 9223372036854775807 
+        return frappe.db.get_singles_dict("GIS Settings") 
     
     @staticmethod
     def get_settings():

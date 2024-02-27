@@ -23,3 +23,12 @@ def extract_fields_from_formula(formula, return_enclosed=True):
 		attrib = match if return_enclosed else match.lstrip(START_DELIMITER).rstrip(END_DELIMITER).strip()
 		fields.append(attrib)
 	return fields
+
+def make_function(expression):
+	"""
+	Construct a dynamic function based on the formula provided
+	""" 
+	# replace x with x.val since x.val is the property of the Dataframe 
+	string_input = f"""def func(x):return {expression}""" 
+	exec(string_input)
+	return locals()['func']

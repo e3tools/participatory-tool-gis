@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:legend_name",
- "creation": "2024-02-19 11:26:59.813009",
+ "creation": "2024-02-19 22:42:11.806902",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -11,8 +11,9 @@
   "legend_name",
   "description",
   "column_break_jvhj",
-  "style",
+  "sld_style",
   "section_break_xgct",
+  "column_break_knxi",
   "legend_entries"
  ],
  "fields": [
@@ -29,12 +30,6 @@
    "label": "Description"
   },
   {
-   "fieldname": "style",
-   "fieldtype": "Small Text",
-   "label": "Style",
-   "read_only": 1
-  },
-  {
    "fieldname": "column_break_jvhj",
    "fieldtype": "Column Break"
   },
@@ -46,13 +41,24 @@
    "fieldname": "legend_entries",
    "fieldtype": "Table",
    "label": "Legend Entries",
-   "options": "Legend Item",
-   "reqd": 1
+   "options": "Legend Item"
+  },
+  {
+   "description": "Contents of a Styled Layer Descriptor (SLD) file if it available. The SLD layer will be used to style the output and will take priority over the legend items",
+   "fieldname": "sld_style",
+   "fieldtype": "Small Text",
+   "label": "SLD Style",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.style_by == 'Legend Items'",
+   "fieldname": "column_break_knxi",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-19 11:51:15.084806",
+ "modified": "2024-02-26 18:28:06.999782",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Legend",

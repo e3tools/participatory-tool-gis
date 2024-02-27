@@ -17,3 +17,4 @@ class Raster(Document):
 				self.nodata = meta.get('nodata') if 'nodata' in meta and meta['nodata'] else DEFAULTS.NODATA
 				self.max_zoom = meta.get('max_zoom') if 'max_zoom' in meta else 0
 				self.srid = meta['crs'] if 'crs' in meta and meta['crs'] else DEFAULTS.SRID
+				self.resolution = meta['resolution'] if 'resolution' in meta and meta['resolution'] else DEFAULTS.RESOLUTION

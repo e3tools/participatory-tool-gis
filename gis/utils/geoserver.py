@@ -1,22 +1,23 @@
 # Import the library
-from geo.Geoserver import Geoserver
+from geo.Geoserver import Geoserver, GeoserverException
 import os
 from gis.utils.settings import get_gis_settings
-from django.conf import settings
+import frappe
 from pysld.style import RasterStyle#, Style 
 import re
 import requests
-from common_gis.models import PublishedComputation
+# from common_gis.models import PublishedComputation
 
 class GeoServerHelper:
-	def __init__(self, analysis_enum, nodata, workspace="partipatory"): 
+	def __init__(self, legend_name, nodata, workspace="participatory"): 
 		# Initialize the library
-		self.host_public = settings.GEOSERVER_HOST_PUBLIC
-		self.host_private = settings.GEOSERVER_HOST_PRIVATE
-		self.ignore_private_host = settings.GEOSERVER_IGNORE_PRIVATE_HOST
-		self.port = settings.GEOSERVER_PORT
-		username = settings.GEOSERVER_USERNAME
-		password = settings.GEOSERVER_PASSWORD
+		self.conf = frappe.conf
+		self.host_public = self.conf.GEOSERVER_HOST_PUBLIC
+		self.host_private = self.conf.GEOSERVER_HOST_PRIVATE
+		self.ignore_private_host = self.conf.GEOSERVER_IGNORE_PRIVATE_HOST
+		self.port = self.conf.GEOSERVER_PORT
+		username = self.conf.GEOSERVER_USERNAME
+		password = self.conf.GEOSERVER_PASSWORD
 		self.site_url = "/geoserver"
 
 		# print("GEOSERVER_IGNORE_PRIVATE_HOST: ", settings.GEOSERVER_IGNORE_PRIVATE_HOST)
@@ -32,11 +33,12 @@ class GeoServerHelper:
 		self.geo = Geoserver(service_url=self.private_url, username=username, password=password)
 		# print("Geoserver created...")
 		self.workspace = workspace
-		self.analysis_enum = analysis_enum
+		self.legend_name = legend_name
+		self.legend_items = frappe.get_doc('Legend', legend_name).legend_entries # analysis_enum
 		# self.computation_type = computation_type		
 		self.nodata = nodata
 		self.sld = None
-		self.style_name = re.search("'\w+'", str(analysis_enum)).group().strip("'")
+		self.style_name = legend_name.strip() # re.search("'\w+'", str(legend_name)).group().strip("'")
 		if workspace: 
 			self.create_workspace(workspace)
 		
@@ -64,9 +66,13 @@ class GeoServerHelper:
 		Args:
 			workspace (string): Workspace name
 		"""
-		exists = self.geo.get_workspace(workspace=workspace)
-		if not exists or "Error " in exists:
-			self.geo.create_workspace(workspace=workspace) 
+		exists = None
+		try:
+			exists = self.geo.get_workspace(workspace=workspace)
+		except GeoserverException as e:
+			if e.status == 404:
+				if not exists or "Error " in exists:
+					self.geo.create_workspace(workspace=workspace) 
 		self.workspace = workspace
 
 	def upload_raster(self, raster_path, workspace=None, layer_name=None):
@@ -80,7 +86,7 @@ class GeoServerHelper:
 		def parse_style_xml(xml):
 			"""Replace the nodata place holder with actual nodata value
 			"""
-			return str(xml).replace(str(settings.NODATA_PLACEHOLDER), str(self.nodata))
+			return str(xml).replace(str(self.conf.NODATA_PLACEHOLDER), str(self.nodata))
 
 		def preprocess_xml(xml):
 			return xml.replace(" ", "").replace("\n", "").replace("\r", "")
@@ -123,18 +129,20 @@ class GeoServerHelper:
 		"""
 		Get already uploaded style that is associated with the change enum
 		"""
-		res = self.geo.get_style(self.style_name, self.workspace)
-		if "get_style error" in res:
-			return None
+		try:
+			res = self.geo.get_style(self.style_name, self.workspace)
+			if "get_style error" in res:
+				return None
+		except GeoserverException as e:
+			if e.status == 404:
+				return False
 		return res
 
 	def is_style_defined(self):
 		"""
 		Check if the SLD style is defined from Django admin PublishedComputation
-		"""
-		# from common_gis.utils.common_util import get_published_computation_by_change_enum
-		# obj = get_published_computation_by_change_enum(self.analysis_enum)
-		obj = self.get_published_computation_by_change_enum()
+		""" 
+		obj = self.get_legend_style()
 		if obj and obj.style:
 			return obj.style
 		return None
@@ -142,15 +150,29 @@ class GeoServerHelper:
 	def _generate_style(self, raster_path):
 		"""
 		Generate SLD file for the layer
+
+		See https://docs.geoserver.org/2.24.x/en/user/tutorials/cql/cql_tutorial.html
+		See https://docs.geoserver.org/2.24.x/en/user/filter/ecql_reference.html#filter-ecql-reference
 		"""  
-		enum_vals = [x.key for x in self.analysis_enum]
+		enum_vals = [x.idx for x in self.legend_items]
 		sld = RasterStyle(style_name=self.style_name,
-						number_of_class=len(enum_vals),
-						continuous_legend=False)
+						number_of_class=5,# 0, #len(enum_vals), # set 0 so that there are no ColorMapEntry
+						continuous_legend=True)#False)
 		style = sld.coverage_style(max_value=max(enum_vals),
 								   min_value=min(enum_vals))
-		style = style.replace('type="intervals"', 'type="values"')								   
-		self.sld = style.replace("</sld:ColorMap>", '<sld:ColorMapEntry color="#e95c47" label="Nodata" quantity="{0}" opacity="0"/>\n</sld:ColorMap>'.format(self.nodata))		
+		style = style.replace('type="intervals"', 'type="values"')			
+
+		# replace the ColorMapEntry with the ones defined in the legend
+		entries = []
+		for itm in self.legend_items:
+			entries.append(f'<sld:ColorMapEntry color="{itm.color}" label="{itm.label}" quantity="{itm.expression}" opacity="3"/>')
+
+		# append nodata item style	
+		entries.append('<sld:ColorMapEntry color="#e95c47" label="Nodata" quantity="{0}" opacity="0"/>'.format(self.nodata))
+
+		self.sld = style.replace("</sld:ColorMap>", '\r\n'.join(entries) + '</sld:ColorMap>')	
+
+		# self.sld = style.replace("</sld:ColorMap>", '<sld:ColorMapEntry color="#e95c47" label="Nodata" quantity="{0}" opacity="0"/>\n</sld:ColorMap>'.format(self.nodata))		
 		
 		# save sld file
 		fl_name = self.save_style_to_disk(self.sld)
@@ -217,7 +239,7 @@ class GeoServerHelper:
 		"""
 		res = self.geo.delete_layer(layer_name=layer, workspace=workspace or self.workspace)
 
-	def get_published_computation_by_change_enum(self):
+	def get_legend_style(self):
 		"""Get associated Published computation by enum type
 
 		Args:
@@ -228,8 +250,8 @@ class GeoServerHelper:
 		# 		return isinstance(member, enum_type)
 		# 	return False
 
-		if self.analysis_enum:
-			enum_name = str(self.analysis_enum).replace("<enum '", "").replace("'>", "").lower() # type(self.analysis_enum).__name__
-			mapping = [x[1] for x in settings.COMPUTATION_ENUM_MAPPING if x[0].lower() == enum_name]
-			#return PublishedComputation.objects.filter(computation_type=self.computation_type).first()
-			return PublishedComputation.objects.filter(computation_type=mapping[0]).first() if mapping else None
+		if self.legend_name:
+			doc = frappe.get_doc("Legend", self.legend_name)
+			return doc.sld_style
+		return None
+	

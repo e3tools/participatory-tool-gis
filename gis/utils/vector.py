@@ -1,8 +1,10 @@
 import json 
 import fiona
 import shapely
+import frappe
 from shapely.geometry import shape
 from frappe import _
+
 
 def parse_shapefile(file_path):
     """
@@ -44,4 +46,44 @@ def parse_shapefile(file_path):
             # feat['geom'] = shapely.to_geojson(geometry)
             features.append(feat)
     return schema, features, json.dumps(parent_geojson)
-    
+
+def get_admin_tree():
+    """
+    Get all admins with the children property set 
+    """ 
+    admin_0 = frappe.db.get_list("Admin 0", fields=['name', 'admin_name'])
+    admin_1 = frappe.db.get_list("Admin 1", fields=['name', 'admin_name', 'admin_0'])
+    admin_2 = frappe.db.get_list("Admin 2", fields=['name', 'admin_name', 'admin_1'])
+    admin_3 = frappe.db.get_list("Admin 3", fields=['name', 'admin_name', 'admin_2'])
+    res = []
+    for adm0 in admin_0:
+        adm0['children'] = []
+        adm0['level'] = 0
+        adm0['parent'] = True
+        res.append(adm0)
+        for adm1 in [x for x in admin_1 if x.admin_0 == adm0.name]:
+            adm0['children'].append(adm1)
+            adm1['level'] = 1
+            adm1['parent'] = True
+            adm1['children'] = []
+            for adm2 in [x for x in admin_2 if x.admin_1 == adm1.name]:
+                adm1['children'].append(adm2)
+                adm2['level'] = 2
+                adm2['parent'] = True
+                adm2['children'] = [] 
+                for adm3 in [x for x in admin_3 if x.admin_2 == adm2.name]:
+                    adm2['children'].append(adm3)
+                    adm3['level'] = 3
+                    adm3['children'] = []
+                    adm3['parent'] = False
+    return res
+
+def get_admin_doc(admin_id: str, admin_level: int):
+    """Get admin object
+
+    Args:
+        admin_id (str): Admin id
+        admin_level (int): Admin Level. One of 0, 1, 2, 3
+    """
+    doc = frappe.get_doc(f"Admin {admin_level}", admin_id)
+    return doc
