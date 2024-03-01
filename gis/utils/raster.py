@@ -532,7 +532,8 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 				'url': wms_url,
 				'layer': layer
 			}
-		} 
+		}
+	stats_obj['nodata'] = cint(str(stats_obj['nodata']))
 	return stats_obj
 
 def sanitize_expression(expression):

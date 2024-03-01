@@ -47,7 +47,7 @@ def parse_shapefile(file_path):
             features.append(feat)
     return schema, features, json.dumps(parent_geojson)
 
-def get_admin_tree():
+def get_admin_tree(as_tree=False):
     """
     Get all admins with the children property set 
     """ 
@@ -76,7 +76,23 @@ def get_admin_tree():
                     adm3['level'] = 3
                     adm3['children'] = []
                     adm3['parent'] = False
-    return res
+    if as_tree:
+        return res
+    else:
+        nodes = []
+        flatten_tree(res, nodes)
+        nodes = sorted(nodes, key=lambda k: k['admin_name'], reverse=False)
+        return nodes
+
+def flatten_tree(tree, nodes):
+    if isinstance(tree, list):
+        for child in tree:
+            flatten_tree(child, nodes=nodes)
+    elif hasattr(tree, 'children') and tree['children']:
+        for child in tree['children']:
+            flatten_tree(child, nodes=nodes)
+    else:
+        nodes.append(tree)
 
 def get_admin_doc(admin_id: str, admin_level: int):
     """Get admin object
