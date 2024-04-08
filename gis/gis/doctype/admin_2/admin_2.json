@@ -9,6 +9,7 @@
   "admin_name",
   "admin_1",
   "type",
+  "bounds",
   "column_break_ufru",
   "geom"
  ],
@@ -43,11 +44,17 @@
    "fieldname": "geom",
    "fieldtype": "Geolocation",
    "label": "Geom"
+  },
+  {
+   "fieldname": "bounds",
+   "fieldtype": "Data",
+   "label": "Bounds",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-31 12:13:32.504357",
+ "modified": "2024-03-25 07:05:42.865437",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 2",

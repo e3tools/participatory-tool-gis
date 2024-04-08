@@ -103,3 +103,14 @@ def get_admin_doc(admin_id: str, admin_level: int):
     """
     doc = frappe.get_doc(f"Admin {admin_level}", admin_id)
     return doc
+
+def get_geojson_bounds(geojson: str):
+    """Get bounding box given a GeoJSON
+
+    Args:
+        geojson (str): _description_
+    """
+    geostr = geojson
+    if isinstance(geojson, dict):
+        geostr = json.dumps(geojson)
+    return shapely.from_geojson(geostr).bounds 

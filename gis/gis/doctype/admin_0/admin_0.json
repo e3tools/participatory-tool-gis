@@ -11,6 +11,7 @@
   "continent",
   "iso3",
   "iso2",
+  "bounds",
   "column_break_bdol",
   "geom"
  ],
@@ -58,11 +59,17 @@
    "label": "Admin Name",
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "fieldname": "bounds",
+   "fieldtype": "Data",
+   "label": "Bounds",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-01-31 12:32:37.615354",
+ "modified": "2024-03-25 07:05:27.813531",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 0",

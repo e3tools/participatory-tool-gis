@@ -3,13 +3,8 @@
 
 # import frappe
 from frappe.model.document import Document
-
+from gis.utils.vector import get_geojson_bounds
 
 class Admin1(Document):
-	def validate(self):
-		print(self.geom)
-		pass
-
-		"""
-		
-		"""
+	def validate(self): 
+		self.bounds = get_geojson_bounds(self.geom)
