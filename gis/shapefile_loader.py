@@ -5,7 +5,7 @@ import pprint
 folder = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson'
 admin_zero_file = f'{folder}/geoBoundaries-KEN-ADM0.geojson'
 admin_one_file = f'{folder}/geoBoundaries-KEN-ADM1.geojson'
-admin_two_file = f'{folder}/geojson/geoBoundaries-KEN-ADM2.geojson'
+admin_two_file = f'{folder}/geoBoundaries-KEN-ADM2.geojson'
 admin_three_file = f'{folder}/geoBoundaries-KEN-ADM3.geojson'
 
 def _load_admins(admin_level, admin_names: list, parent):
