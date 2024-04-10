@@ -2,10 +2,12 @@ import json
 import frappe
 import pprint
 
-admin_zero_file = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/geoBoundaries-KEN-ADM0.geojson'
-admin_one_file = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/geoBoundaries-KEN-ADM1.geojson'
-admin_two_file = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/geoBoundaries-KEN-ADM2.geojson'
-admin_three_file = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/geoBoundaries-KEN-ADM3.geojson'
+folder = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson'
+admin_zero_file = f'{folder}/geoBoundaries-KEN-ADM0.geojson'
+admin_one_file = f'{folder}/geoBoundaries-KEN-ADM1.geojson'
+admin_two_file = f'{folder}/geojson/geoBoundaries-KEN-ADM2.geojson'
+admin_three_file = f'{folder}/geoBoundaries-KEN-ADM3.geojson'
+
 def _load_admins(admin_level, admin_names: list, parent):
     if not isinstance(admin_names, list):
         admin_names = [admin_names]
@@ -45,6 +47,9 @@ def _load_admins(admin_level, admin_names: list, parent):
         doc.save(ignore_permissions=True)
 
 
+def load_admin_zero():
+    _load_admins(admin_level=0, admin_names=['Kenya'], parent='Africa')
+
 def load_admin_one():
     _load_admins(admin_level=1, admin_names=['Makueni'], parent='Kenya')
     
@@ -61,6 +66,7 @@ def load_admin_three():
     _load_admins(admin_level=3, admin_names=['Tulimani', 'Mbooni', 'Kithungo/Kitundu', 'Kisau/Kiteta', 'Waia/Kako', 'Kalawa'], parent='Mbooni')
 
 def load_all_admins():
+    load_admin_zero()
     load_admin_one()
     load_admin_two()
     load_admin_three()

@@ -6,7 +6,6 @@
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "admin_code",
   "admin_name",
   "continent",
   "iso3",
@@ -46,13 +45,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "admin_code",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Admin Code",
-   "reqd": 1
-  },
-  {
    "fieldname": "admin_name",
    "fieldtype": "Data",
    "in_list_view": 1,
@@ -69,7 +61,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-25 07:05:27.813531",
+ "modified": "2024-04-11 01:21:10.614646",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 0",
