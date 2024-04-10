@@ -7,4 +7,4 @@ from gis.utils.vector import get_geojson_bounds
 
 class Admin2(Document):
 	def validate(self):
-		self.bounds = get_geojson_bounds(self.geom)
+		self.bounds = str(get_geojson_bounds(self.geom))
