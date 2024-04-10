@@ -8,7 +8,6 @@
  "field_order": [
   "admin_name",
   "admin_1",
-  "type",
   "bounds",
   "column_break_ufru",
   "geom"
@@ -31,12 +30,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "type",
-   "fieldtype": "Select",
-   "label": "Type",
-   "options": "Constituency"
-  },
-  {
    "fieldname": "column_break_ufru",
    "fieldtype": "Column Break"
   },
@@ -54,7 +47,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-25 07:05:42.865437",
+ "modified": "2024-04-11 00:10:19.533409",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 2",

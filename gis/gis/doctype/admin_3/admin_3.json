@@ -8,7 +8,6 @@
  "field_order": [
   "admin_name",
   "admin_2",
-  "type",
   "bounds",
   "column_break_ng7k",
   "geom"
@@ -31,13 +30,6 @@
    "reqd": 1
   },
   {
-   "fieldname": "type",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Type",
-   "reqd": 1
-  },
-  {
    "fieldname": "column_break_ng7k",
    "fieldtype": "Column Break"
   },
@@ -56,7 +48,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-03-25 07:07:07.732505",
+ "modified": "2024-04-11 00:10:33.059576",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 3",
