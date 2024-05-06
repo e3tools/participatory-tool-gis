@@ -1,5 +1,5 @@
 # Import the library
-from geo.Geoserver import Geoserver, GeoserverException
+from geo.Geoserver import Geoserver #, GeoserverException
 import os
 from gis.utils.settings import get_gis_settings
 import frappe
@@ -69,7 +69,7 @@ class GeoServerHelper:
 		exists = None
 		try:
 			exists = self.geo.get_workspace(workspace=workspace)
-		except GeoserverException as e:
+		except Exception as e:
 			if e.status == 404:
 				if not exists or "Error " in exists:
 					self.geo.create_workspace(workspace=workspace) 
@@ -133,7 +133,7 @@ class GeoServerHelper:
 			res = self.geo.get_style(self.style_name, self.workspace)
 			if "get_style error" in res:
 				return None
-		except GeoserverException as e:
+		except Exception as e:
 			if e.status == 404:
 				return False
 		return res
