@@ -2,7 +2,7 @@
  "actions": [],
  "allow_rename": 1,
  "autoname": "field:legend_name",
- "creation": "2024-02-19 22:42:11.806902",
+ "creation": "2024-02-28 05:00:12.387815",
  "default_view": "List",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -44,7 +44,7 @@
    "options": "Legend Item"
   },
   {
-   "description": "Contents of a Styled Layer Descriptor (SLD) file if it available. The SLD layer will be used to style the output and will take priority over the legend items",
+   "description": "<b>Contents of a Styled Layer Descriptor (SLD) file if it available. The SLD layer will be used to style the output and <font color=\"red\"> will take priority </font> over the legend entries</b>",
    "fieldname": "sld_style",
    "fieldtype": "Small Text",
    "label": "SLD Style"
@@ -57,7 +57,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-02-28 04:59:40.843468",
+ "modified": "2024-05-01 14:19:58.957328",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Legend",

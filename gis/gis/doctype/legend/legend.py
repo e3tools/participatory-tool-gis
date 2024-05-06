@@ -9,3 +9,6 @@ class Legend(Document):
 	def validate(self):
 		if not self.sld_style and not self.legend_entries:
 			frappe.throw(_("You must specify either the legend entries or the SLD Layer"))
+
+	def validate_sld(self):
+		pass

@@ -6,7 +6,7 @@ import frappe
 from pysld.style import RasterStyle#, Style 
 import re
 import requests
-# from common_gis.models import PublishedComputation
+from gis.utils.sld import style_from_legend
 
 class GeoServerHelper:
 	def __init__(self, legend_name, nodata, workspace="participatory"): 
@@ -108,7 +108,7 @@ class GeoServerHelper:
 		# Check if a previous sld has been uploaded 
 		existing_style = self._retrieve_style()
 		if not existing_style:
-			sld_file = self.save_style_to_disk(sld_xml) if sld_xml else self._generate_style(raster_path)
+			sld_file = self.save_style_to_disk(sld_xml) if sld_xml else self._generate_style()
 			res = self.geo.upload_style(path=sld_file, name=self.style_name, workspace=self.workspace)
 			# print("upload_style: ", res)
 		elif existing_style and sld_xml: # if style is existing, check if published style is diff from the current one. If yes replace		
@@ -148,7 +148,43 @@ class GeoServerHelper:
 		#return None
 		return obj
 
-	def _generate_style(self, raster_path):
+	def _generate_style(self):
+		"""
+		Generate SLD file for the layer
+
+		See https://docs.geoserver.org/2.24.x/en/user/tutorials/cql/cql_tutorial.html
+		See https://docs.geoserver.org/2.24.x/en/user/filter/ecql_reference.html#filter-ecql-reference
+		"""  
+		# enum_vals = [x.idx for x in self.legend_items]
+		# sld = RasterStyle(style_name=self.style_name,
+		# 				number_of_class=5,# 0, #len(enum_vals), # set 0 so that there are no ColorMapEntry
+		# 				continuous_legend=True)#False)
+		# style = sld.coverage_style(max_value=max(enum_vals),
+		# 						   min_value=min(enum_vals))
+		# style = style.replace('type="intervals"', 'type="values"')			
+
+		# # replace the ColorMapEntry with the ones defined in the legend
+		# entries = []
+		# for itm in self.legend_items:
+		# 	entries.append(f'<sld:ColorMapEntry color="{itm.color}" label="{itm.label}" quantity="{itm.expression}" opacity="3"/>')
+
+		# # append nodata item style	
+		# entries.append('<sld:ColorMapEntry color="#e95c47" label="Nodata" quantity="{0}" opacity="0"/>'.format(self.nodata))
+
+		self.sld = style_from_legend(self.legend_name, self.legend_name, self.nodata, False, 0)
+		
+		# style.replace("</sld:ColorMap>", '\r\n'.join(entries) + '</sld:ColorMap>')	
+
+		# self.sld = style.replace("</sld:ColorMap>", '<sld:ColorMapEntry color="#e95c47" label="Nodata" quantity="{0}" opacity="0"/>\n</sld:ColorMap>'.format(self.nodata))		
+		
+		# save sld file
+		fl_name = self.save_style_to_disk(self.sld)
+		# fl_name = "{0}.sld".format(self.style_name)
+		# with open(fl_name, "w") as f:
+		# 	f.write(self.sld)
+		return fl_name
+	
+	def OLD_generate_style(self, raster_path):
 		"""
 		Generate SLD file for the layer
 

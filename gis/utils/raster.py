@@ -19,7 +19,7 @@ import pandas as pd
 from gis.utils.common import make_function
 import re
 import swifter
-
+from gis.utils.sld import legend_from_sld
 
 # see https://geoscripting-wur.github.io/PythonRaster/
 # See https://community.esri.com/t5/python-snippets-blog/calculating-zonal-statistics-with-python/ba-p/883278
@@ -480,8 +480,7 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 		#for mapping in change_enum:
 		for mapping in legend.legend_entries:
 			#df.loc[df.apply(lambda x: (x.val % 2 == 0), axis=1 ) ,  'mapping'] = 11
-
-			
+   
 			# func = _make_function(expression)
 			# if expression.strip().lower() == 'x':
 			# 	# if formula is x, no need to apply a transform
@@ -508,7 +507,22 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 				'area': compute_area(count, resolution)
 			}) 
 
-	nodata_count = 0 
+	# set legend
+	analysis_legend = []
+	# SLD Style takes precedence over legend_entries
+	if legend.sld_style:
+		legend_items = legend_from_sld(legend.sld_style)
+	else:
+		legend_items = legend.legend_entries
+
+	for mapping in legend_items:
+		analysis_legend.append({
+			'label': str(mapping.label),
+			'color': str(mapping.color),
+			'expression': str(mapping.expression),
+		})
+
+	nodata_count = 0
 	if nodata in val_counts:
 		nodata_count = val_counts[nodata]
 
@@ -526,6 +540,7 @@ def return_raster_with_stats(request, datasource, prefix, legend_name,
 			"nodataval": nodata,
 			"nodata": compute_area(nodata_count, resolution),
 			'stats': results,
+			'legend': analysis_legend,
 			'extras': extras,
 			'change_enum': str(legend_name),
 			'tiles': {
@@ -691,35 +706,35 @@ def generate_tiles(raster_file, nodata, legend_name):
 
 
 def clip_raster_deprecated(raster_path, vector):
-    raster_file = str(datetime.datetime.now()).replace(' ', '_').replace('-','').replace(':','').replace('.', '_') + '.png'# '.tif'
-    output_raster_path = raster_file # get_files_path(raster_file, is_private=False)
-    with rasterio.open(raster_path) as src:
-        out_img, out_transform = rasterio.mask.mask(src, [vector], crop=True)
-        out_meta = src.meta
+	raster_file = str(datetime.datetime.now()).replace(' ', '_').replace('-','').replace(':','').replace('.', '_') + '.png'# '.tif'
+	output_raster_path = raster_file # get_files_path(raster_file, is_private=False)
+	with rasterio.open(raster_path) as src:
+		out_img, out_transform = rasterio.mask.mask(src, [vector], crop=True)
+		out_meta = src.meta
 
-    out_meta.update({
-        #'driver': 'GTiff',
-        'driver': 'PNG',
-        'height': out_img.shape[1],
-        'width': out_img.shape[2],
-        'transform': out_transform
-    })
+	out_meta.update({
+		#'driver': 'GTiff',
+		'driver': 'PNG',
+		'height': out_img.shape[1],
+		'width': out_img.shape[2],
+		'transform': out_transform
+	})
 
-    # enable compress
-    out_meta.update({'compress': 'lzw'})   
+	# enable compress
+	out_meta.update({'compress': 'lzw'})   
 
-    tmp_file = tempfile.NamedTemporaryFile().name
-    with rasterio.open(tmp_file, 'w', **out_meta) as dest:
-        dest.write(out_img)
+	tmp_file = tempfile.NamedTemporaryFile().name
+	with rasterio.open(tmp_file, 'w', **out_meta) as dest:
+		dest.write(out_img)
 
-    # save to frappe site files folder
-    with open (tmp_file, "rb") as myfile:
-        data_file=myfile.read()
+	# save to frappe site files folder
+	with open (tmp_file, "rb") as myfile:
+		data_file=myfile.read()
 
-    frappe.db.connect() #connect incase just to avoid risk of Lost connection error  
-    #delete_file("files/" + report_name + ".zip") # delete old zip if it exists
-    
-    print ("Attaching file ...")
-    fl = save_file_on_filesystem(output_raster_path, content=data_file)
-    print ("File url", fl['file_url'])
-    return fl['file_url']  
+	frappe.db.connect() #connect incase just to avoid risk of Lost connection error  
+	#delete_file("files/" + report_name + ".zip") # delete old zip if it exists
+	
+	print ("Attaching file ...")
+	fl = save_file_on_filesystem(output_raster_path, content=data_file)
+	print ("File url", fl['file_url'])
+	return fl['file_url']  
