@@ -331,7 +331,11 @@ def clip_raster_to_vector(raster_file, vector=None, use_temp_dir=True, dest_noda
 		out_meta = src.meta
 		nodata = dest_nodata if dest_nodata != None else src.meta['nodata'] or DEFAULTS.NODATA
 		if vector:
-			shapes = [x['geometry'] for x in json.loads(vector)['features']]
+			json_vect = json.loads(vector)
+			if 'features' in json_vect:
+				shapes = [x['geometry'] for x in json.loads(vector)['features']]
+			else:
+				shapes = [json_vect]
 			out_image, out_transform = rasterio.mask.mask(src, 
 						shapes, #[json.loads(vector)], # accepts array of shapes
 						all_touched=all_touched,

@@ -89,6 +89,9 @@ def flatten_tree(tree, nodes):
         for child in tree:
             flatten_tree(child, nodes=nodes)
     elif hasattr(tree, 'children') and tree['children']:
+        clone_parent = frappe._dict(tree) #clone the current parent
+        # del clone_parent['children'] # remove the children details
+        nodes.append(clone_parent) # append it to the list
         for child in tree['children']:
             flatten_tree(child, nodes=nodes)
     else:
