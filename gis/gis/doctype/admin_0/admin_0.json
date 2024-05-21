@@ -1,38 +1,27 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:admin_name",
+ "autoname": "field:country",
  "creation": "2024-01-31 11:37:36.805116",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "admin_name",
-  "continent",
+  "country",
   "iso3",
-  "iso2",
   "bounds",
+  "cluster",
+  "fid",
+  "continent",
+  "admin_name",
   "column_break_bdol",
   "geom"
  ],
  "fields": [
   {
-   "fieldname": "continent",
-   "fieldtype": "Select",
-   "label": "Continent",
-   "options": "Africa",
-   "reqd": 1
-  },
-  {
    "fieldname": "iso3",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "ISO3"
-  },
-  {
-   "fieldname": "iso2",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "ISO2"
+   "label": "GID_0"
   },
   {
    "fieldname": "column_break_bdol",
@@ -45,23 +34,46 @@
    "reqd": 1
   },
   {
-   "fieldname": "admin_name",
+   "fieldname": "bounds",
+   "fieldtype": "Data",
+   "label": "Bounds",
+   "read_only": 1
+  },
+  {
+   "description": "Any applicable grouping e.g regions, provinces etc",
+   "fieldname": "cluster",
+   "fieldtype": "Data",
+   "label": "Cluster"
+  },
+  {
+   "fieldname": "country",
    "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Admin Name",
+   "label": "Country",
    "reqd": 1,
    "unique": 1
   },
   {
-   "fieldname": "bounds",
+   "fieldname": "fid",
    "fieldtype": "Data",
-   "label": "Bounds",
+   "label": "Feature ID",
+   "read_only": 1
+  },
+  {
+   "fieldname": "continent",
+   "fieldtype": "Data",
+   "label": "Continent"
+  },
+  {
+   "fieldname": "admin_name",
+   "fieldtype": "Data",
+   "label": "Admin Name",
    "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-07 21:34:29.514662",
+ "modified": "2024-05-21 08:03:30.571793",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 0",
