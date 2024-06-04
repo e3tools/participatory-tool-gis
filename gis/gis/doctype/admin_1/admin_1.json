@@ -1,38 +1,20 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:name_1",
+ "autoname": "field:admin_name",
  "creation": "2024-05-07 21:33:04.572603",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "name_1",
-  "admin_0",
-  "bounds",
-  "cluster",
-  "fid",
-  "gid_1",
-  "gid_0",
-  "varname_1",
-  "nl_name_1",
-  "type_1",
-  "engtype_1",
-  "cc_1",
-  "hasc_1",
-  "iso_1",
   "admin_name",
+  "parent_admin",
+  "cluster",
+  "bounds",
+  "country",
   "column_break_swjm",
   "geom"
  ],
  "fields": [
-  {
-   "fieldname": "admin_0",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Country",
-   "options": "Admin 0",
-   "reqd": 1
-  },
   {
    "fieldname": "column_break_swjm",
    "fieldtype": "Column Break"
@@ -56,83 +38,30 @@
    "label": "Cluster"
   },
   {
-   "fieldname": "name_1",
+   "fieldname": "admin_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Name_1",
+   "label": "Admin Name",
    "reqd": 1,
    "unique": 1
   },
   {
-   "fieldname": "fid",
-   "fieldtype": "Data",
-   "label": "FID",
-   "read_only": 1
+   "fieldname": "parent_admin",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parent Admin",
+   "options": "Admin 0",
+   "reqd": 1
   },
   {
-   "fieldname": "gid_1",
-   "fieldtype": "Data",
-   "label": "GID_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "gid_0",
-   "fieldtype": "Data",
-   "label": "GID_0",
-   "read_only": 1
-  },
-  {
-   "fieldname": "varname_1",
-   "fieldtype": "Data",
-   "label": "VARNAME_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "nl_name_1",
-   "fieldtype": "Data",
-   "label": "NL_NAME_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "type_1",
-   "fieldtype": "Data",
-   "label": "TYPE_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "engtype_1",
-   "fieldtype": "Data",
-   "label": "ENGTYPE_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "cc_1",
-   "fieldtype": "Data",
-   "label": "CC_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "hasc_1",
-   "fieldtype": "Data",
-   "label": "HASC_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "iso_1",
-   "fieldtype": "Data",
-   "label": "ISO_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "admin_name",
-   "fieldtype": "Data",
-   "label": "Admin Name",
-   "read_only": 1
+   "fieldname": "country",
+   "fieldtype": "Link",
+   "label": "Country",
+   "options": "Admin 0"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-21 08:04:51.822308",
+ "modified": "2024-06-04 14:46:37.707401",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 1",

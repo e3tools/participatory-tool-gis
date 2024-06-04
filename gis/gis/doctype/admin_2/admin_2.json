@@ -1,27 +1,16 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:name_2",
+ "autoname": "field:admin_name",
  "creation": "2024-05-07 21:33:07.905669",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "name_2",
-  "name_1",
-  "bounds",
-  "cluster",
-  "gid_2",
-  "gid_0",
-  "country",
-  "gid_1",
-  "nl_name_1",
-  "varname_2",
-  "nl_name_2",
-  "type_2",
-  "engtype_2",
-  "cc_2",
-  "hasc_2",
   "admin_name",
+  "parent_admin",
+  "cluster",
+  "bounds",
+  "country",
   "column_break_ufru",
   "geom"
  ],
@@ -48,26 +37,6 @@
    "label": "Cluster"
   },
   {
-   "fieldname": "name_2",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Name_2",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "gid_2",
-   "fieldtype": "Data",
-   "label": "GID_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "gid_0",
-   "fieldtype": "Data",
-   "label": "GID_0",
-   "read_only": 1
-  },
-  {
    "fieldname": "country",
    "fieldtype": "Link",
    "label": "Country",
@@ -75,71 +44,25 @@
    "read_only": 1
   },
   {
-   "fieldname": "gid_1",
-   "fieldtype": "Data",
-   "label": "GID_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "nl_name_1",
-   "fieldtype": "Data",
-   "label": "NL_NAME_1",
-   "read_only": 1
-  },
-  {
-   "fieldname": "varname_2",
-   "fieldtype": "Data",
-   "label": "VARNAME_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "nl_name_2",
-   "fieldtype": "Data",
-   "label": "NL_NAME_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "type_2",
-   "fieldtype": "Data",
-   "label": "TYPE_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "engtype_2",
-   "fieldtype": "Data",
-   "label": "ENGTYPE_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "cc_2",
-   "fieldtype": "Data",
-   "label": "CC_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "hasc_2",
-   "fieldtype": "Data",
-   "label": "HASC_2",
-   "read_only": 1
-  },
-  {
-   "fieldname": "name_1",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "NAME_1",
-   "options": "Admin 1",
-   "reqd": 1
-  },
-  {
    "fieldname": "admin_name",
    "fieldtype": "Data",
    "label": "Admin Name",
-   "read_only": 1
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "parent_admin",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parent Admin",
+   "options": "Admin 1",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-05-21 08:04:02.912857",
+ "modified": "2024-06-04 14:45:55.694008",
  "modified_by": "Administrator",
  "module": "gis",
  "name": "Admin 2",

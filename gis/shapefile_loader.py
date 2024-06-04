@@ -113,30 +113,37 @@ def load_full_admin_tree():
     def _process_counties():
         source_file = f'{data_folder}/kenya_counties.geojson'
         _do_process(source_file, admin_level=COUNTY, name_property='county', parent_property='country', 
-                    parent_field='admin_0')
+                    parent_field='parent_admin')
 
     def _process_sub_counties():
         source_file = f'{data_folder}/kenya_sub_counties.geojson'
         _do_process(source_file, admin_level=SUB_COUNTY, name_property='subcounty', 
-                    parent_property='county', parent_field='admin_1', suffix='Sub County',
+                    parent_property='county', parent_field='parent_admin', suffix='Sub County',
                     cluster_property='province')
 
     def _process_wards():
         source_file = f'{data_folder}/kenya_wards.geojson'
         _do_process(source_file, admin_level=WARD, name_property='ward', 
-                    parent_property='subcounty', parent_field='admin_2', suffix='Ward', 
-                    parent_suffix='Sub County')
+                    parent_property='subcounty', parent_field='parent_admin', suffix='Ward', 
+                    parent_suffix='Sub County', cluster_property='county')
 
-    def _process_locations():
-        source_file = f'{data_folder}/kenya_locations.geojson'
-        _do_process(source_file, admin_level=LOCATION, name_property='ward', 
-                    parent_property='county', parent_field='admin_3', suffix='Sub County')
+    # def _process_locations():
+    #     source_file = f'{data_folder}/kenya_locations.geojson'
+    #     _do_process(source_file, admin_level=LOCATION, name_property='ward', 
+    #                 parent_property='county', parent_field='parent_admin', suffix='Sub County')
 
     def _process_sub_locations():
+        """
+        Data downloaded from https://github.com/4adb7a60-1622-4152-9567-e8f27d1627f3
+        We will use sub_locations file to deduce locations
+        For each sublocation, we will lookup if the name of location from locations geojson file. If the 
+        entry is found, then save that location and then proceed to save the sub-location
+        """
         source_file = f'{data_folder}/kenya_sub_locations.geojson'
-        _do_process(source_file, admin_level=SUB_LOCATION, name_property='ADM5', 
-                    parent_property='ADM4', parent_field='admin_4', suffix=None)
-
+        _do_process(source_file, admin_level=SUB_LOCATION, name_property='SLNAME', 
+                    parent_property='LOCNAME', parent_field='parent_admin', suffix=None,
+                    cluster_property='DISTNAME')
+    
     def _do_process(source_file: str, admin_level: int, name_property: str, parent_property: str, admin_names: list = [], 
                     parent: str = None, parent_field: str = None, suffix: str=None, parent_suffix: str=None,
                     cluster_property: str = None):
@@ -169,15 +176,54 @@ def load_full_admin_tree():
             counts = [x for x in geojson['features'] if _sanitize_name(x['properties'][name_property]) == admin_name]
             if len(counts) > 1:
                 # there exists multiple admins with same name, so rename the existing
-                import pdb; pdb.set_trace()
                 return f'{admin_name} - {parent_val}'
             return admin_name
+
+        def _save_location(location_name, subcounty_name, locations: list=[], cluster_property='DISTNAME'): 
+            matching = [x for x in locations['features'] if _sanitize_name(x['properties']['LOCNAME']) == _sanitize_name(location_name)]
+            if matching:                
+                loc = matching[0]
+                admin_name_val = _sanitize_name(location_name, sfx=None) 
+                docname = make_admin_name(admin_name_val, subcounty_name)
+                # if not admin_name_val:
+                #     import pdb; pdb.set_trace()
+                # print("Processing location {0}".format(location_name))
+                # exists = frappe.db.exists(doctype, {'name': admin_name_val,  parent_field: parent_val})
+                exists = frappe.db.exists('Admin 4', {'name': docname})
+                if exists:
+                    # continue #do nothing
+                    doc = frappe.get_doc('Admin 4', docname)
+                else:
+                    doc = frappe.new_doc('Admin 4')
+                r = loc['properties']
+                if cluster_property:
+                    r['cluster'] = loc['properties'][cluster_property]      
+
+                if frappe.db.exists("Admin 3", _sanitize_name(subcounty_name)):
+                    r[parent_field] = _sanitize_name(subcounty_name)
+                    doc.update(r)
+                    doc.admin_name = docname
+                    doc.geom = json.dumps(loc['geometry'])
+                    doc.save(ignore_permissions=True)
+                    return doc.name
+                # check if location is already saved
+                return frappe.db.exists("Admin 4", docname)
+            return None
 
         # load json file
         with open(source_file) as f:
             geojson = json.load(f)
         
-        #pprint.pprint(sorted([x['properties']['shapeName'] for x in geojson['features']])) 
+        #pprint.pprint(sorted([x['properties']['shapeName'] for x in geojson['features']]))
+        
+        # finish loading locations
+
+        locations = []
+        if admin_level == SUB_LOCATION:
+            # load locations 
+            loc_file = f'{data_folder}/kenya_locations.geojson'
+            with open(source_file) as f:
+                locations = json.load(f)
 
         admin_names = [_sanitize_name(x) for x in admin_names]
 
@@ -185,10 +231,24 @@ def load_full_admin_tree():
         # filter matching features
         matching = [x for x in geojson['features'] if _sanitize_name(x['properties'][name_property]) in admin_names] if admin_names else geojson['features']
         import pdb; pdb.set_trace()
+        locations_not_processed = []
         for i, feat in enumerate(matching):
             admin_name_val = _sanitize_name(feat['properties'][name_property], sfx=suffix)
-            parent_val = _sanitize_name(feat['properties'][parent_property], sfx=parent_suffix)
+
+            location_name = None
+            if admin_level == SUB_LOCATION:
+                # lookup location
+                location_name = _save_location(feat['properties']['LOCNAME'], feat['properties']['DIVNAME'], locations=locations)
+                parent_val = location_name
+                if not location_name:
+                    locations_not_processed.append({"sub-county": feat['properties']['DIVNAME'], "location": feat['properties']['LOCNAME'], "sublocation": feat['properties'][name_property]})
+                    continue
+            else: 
+                parent_val = _sanitize_name(feat['properties'][parent_property], sfx=parent_suffix)
+            
             docname = make_admin_name(admin_name_val, parent_val)
+            # if not admin_name_val:
+            #     import pdb; pdb.set_trace()
             print("Processing {0}. {1} of {2}".format(admin_name_val, i+1, len(matching)))
             # exists = frappe.db.exists(doctype, {'name': admin_name_val,  parent_field: parent_val})
             exists = frappe.db.exists(doctype, {'name': docname})
@@ -199,19 +259,25 @@ def load_full_admin_tree():
                 doc = frappe.new_doc(doctype)
             r = feat['properties']
             if cluster_property:
-                r['cluster'] = feat['properties'][cluster_property]            
+                r['cluster'] = feat['properties'][cluster_property]      
             r[parent_field] = parent_val
             doc.update(r)
             doc.admin_name = docname
             doc.geom = json.dumps(feat['geometry'])
             doc.save(ignore_permissions=True)
 
+        if locations_not_processed:
+            print("\nSub-counties not processed: ", sorted(list(set([x['sub-county'] for x in locations_not_processed if x['sub-county']]))))
+            print("\nLocations not processed: ", sorted(list(set([x['location'] for x in locations_not_processed if x['location']]))))
+            print("\nSub-Locations not processed: ", sorted(list(set([x['sublocation'] for x in locations_not_processed if x['sublocation']]))))
+
     data_folder = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/humdata'
     
     # import_country
-    _process_counties()
-    _process_sub_counties()
-    _process_wards()
+    # _process_counties()
+    #_process_sub_counties()
+    # _process_wards()
+    _process_sub_locations()
     # import counties
     # import wards
     # import locations
@@ -219,7 +285,13 @@ def load_full_admin_tree():
     pass    
 
 def sanitize_name(name: str, suffix: str = None):
-    name = name.strip(suffix or '')
+    # name = name.strip(suffix or '') # do not use strip as strip replaces a character at a time thus may mess the orginal value
+    name = name.strip() if name else ''
+    if suffix:
+        tot_len = len(name)
+        sfx_len = len(suffix)
+        if name[tot_len - sfx_len:] == suffix:
+            name = name[:-len(suffix)].strip() 
     return frappe.unscrub(name.replace("'", ""))
 
 def download_gadm_data(country_iso3='KEN', timeout_sec: float = 180, logger: logging.Logger = logging.getLogger()) -> None:

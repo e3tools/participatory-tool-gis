@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:admin_name",
+ "creation": "2024-06-03 11:58:31.750063",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "admin_name",
+  "parent_admin",
+  "cluster",
+  "bounds",
+  "column_break_jrcn",
+  "geom"
+ ],
+ "fields": [
+  {
+   "fieldname": "admin_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Admin Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "bounds",
+   "fieldtype": "Data",
+   "label": "Bounds"
+  },
+  {
+   "description": "Any applicable grouping e.g regions, provinces etc",
+   "fieldname": "cluster",
+   "fieldtype": "Data",
+   "label": "Cluster"
+  },
+  {
+   "fieldname": "parent_admin",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Parent Admin",
+   "options": "Admin 4",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_jrcn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "geom",
+   "fieldtype": "Geolocation",
+   "label": "Geometry"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-03 15:18:50.991283",
+ "modified_by": "Administrator",
+ "module": "gis",
+ "name": "Admin 5",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
