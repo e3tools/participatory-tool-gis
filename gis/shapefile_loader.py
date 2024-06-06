@@ -296,8 +296,7 @@ def load_full_admin_tree(county_to_process='Makueni'):
             r[parent_field] = parent_val
             doc.update(r)
             doc.admin_name = docname
-            doc.geom = json.dumps(feat['geometry'])
-            # import pdb; pdb.set_trace()
+            doc.geom = json.dumps(feat['geometry']) 
             if admin_level == COUNTRY:
                 doc.save(ignore_permissions=True)
             else:
