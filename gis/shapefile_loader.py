@@ -308,7 +308,9 @@ def load_full_admin_tree(county_to_process='Makueni'):
             print("\nLocations not processed: ", sorted(list(set([x['location'] for x in locations_not_processed if x['location']]))))
             print("\nSub-Locations not processed: ", sorted(list(set([x['sublocation'] for x in locations_not_processed if x['sublocation']]))))
 
-    data_folder = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/humdata'
+    # data_folder = '/home/nyaga/frappe-bench-15/apps/gis/data/geojson/humdata'
+    parent_folder = os.path.abspath(os.path.join(os.getcwd(), ".."))
+    data_folder = os.path.join(parent_folder, "apps", "gis", "data", "geojson", "humdata")
     
     _process_country()
     # _process_counties()
