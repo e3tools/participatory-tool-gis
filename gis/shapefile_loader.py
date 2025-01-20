@@ -44,7 +44,7 @@ def load_cascaded_county_admins():
 	admin_zero_file = f'{folder}/kenya_country.geojson'
 	admin_one_file = f'{folder}/kenya_counties.geojson'
 	admin_two_file = f'{folder}/kenya_sub_counties.geojson'
-	admin_three_file = f'{folder}/kenya_wards.geojson' 
+	admin_three_file = f'{folder}/kenya_wards.geojson'  
 
 	def _load_admin_geojsons():
 		print ("Reading admin zero...")
