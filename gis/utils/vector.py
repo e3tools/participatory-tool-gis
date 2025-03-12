@@ -116,4 +116,5 @@ def get_geojson_bounds(geojson: str):
     geostr = geojson
     if isinstance(geojson, dict):
         geostr = json.dumps(geojson)
-    return list(shapely.from_geojson(geostr).bounds)
+    geom = shapely.from_geojson(geostr)
+    return [] if not geom else list(geom.bounds)
