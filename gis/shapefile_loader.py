@@ -249,7 +249,8 @@ def load_cascaded_county_admins():
 
     # _load_recursive("Nyeri")
     # _load_recursive("Taita Taveta")
-    _load_recursive("Homa Bay")
+    # _load_recursive("Homa Bay")
+    _load_recursive("Nandi")
 
 
 def sanitize_admin_name(text, suffix):
